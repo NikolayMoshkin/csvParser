@@ -13,10 +13,11 @@ class csvImport
     protected static $filePath;
     protected static $initOffset = 0;
     protected static $chunk;
-    protected static $logView = 1000;
+    protected static $logPeriod = 2000;
 
 
-    public static function start(string $filePath, int $chunk = 10000){
+    public static function start(string $filePath, int $chunk = 15000)
+    {
         self::$chunk = $chunk;
         self::$filePath = $filePath;
         $csv = Reader::createFromPath(self::$filePath, 'r');
@@ -27,14 +28,16 @@ class csvImport
     {
 //        $csv = Reader::createFromStream(fopen(self::$filePath, 'r+'));
 //        $csv->setHeaderOffset(0); //set the CSV header offset
+
         dump('lines:' . self::$counter . '; mem usage:' . round(memory_get_usage() / pow(1024, 2)) . ' MB');
+
         $stmt = (new Statement())
             ->offset($offset)
             ->limit($limit);
 
         $records = $stmt->process($csv);
 
-        if (empty($records->fetchOne())){
+        if (empty($records->fetchOne())) {
             return true;
         };
 
@@ -42,9 +45,9 @@ class csvImport
         foreach ($records as $offset => $record) {
             $resultArray = self::convertRow($record);
 
-//            if (!Connection::where('timestamp', $resultArray[0])->exists()) {
+            if (! Connection::where('timestamp', $resultArray[0])->exists()) {
 
-            $dataToInsert[] = [
+                $dataToInsert[] = [
                     'timestamp' => $resultArray[0],
                     'time' => Carbon::createFromDate($resultArray[1]),
                     'domain_name' => $resultArray[2],
@@ -55,20 +58,21 @@ class csvImport
                     'http_method' => $resultArray[7],
                     'content_type' => $resultArray[8],
                 ];
-//            }
+            }
 
             self::$counter++;
 
-            if (self::$counter % self::$logView === 0) {
+            if (self::$counter % self::$logPeriod === 0) {
                 dump('lines:' . self::$counter . '; mem peak usage:' . round(memory_get_peak_usage() / pow(1024, 2)) . ' MB');
                 Connection::insert($dataToInsert);
-                unset($dataToInsert);
                 $dataToInsert = array();
             }
         }
+
         unset($stmt);
         unset($records);
         unset($dataToInsert);
+
         self::import($csv, self::$counter, self::$chunk);
     }
 

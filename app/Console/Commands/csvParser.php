@@ -43,8 +43,8 @@ class csvParser extends Command
     public function handle()
     {
         $this->info('Import starts');
-//        $result = Excel::import(new ConnectionsImport, $this->option('filePath'));
-        csvImport::start($this->option('filePath'));
+//        $result = Excel::import(new ConnectionsImport, $this->option('filePath')); //first library
+        csvImport::start($this->option('filePath')); //second library
 
         $this->info('Done!');
     }
