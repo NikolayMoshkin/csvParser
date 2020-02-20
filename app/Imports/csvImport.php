@@ -13,10 +13,10 @@ class csvImport
     protected static $filePath;
     protected static $initOffset = 0;
     protected static $chunk;
-    protected static $logPeriod = 2000;
+    protected static $logPeriod = 3000;
 
 
-    public static function start(string $filePath, int $chunk = 15000)
+    public static function start(string $filePath, int $chunk = 100000)
     {
         self::$chunk = $chunk;
         self::$filePath = $filePath;
