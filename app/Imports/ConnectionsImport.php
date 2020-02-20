@@ -22,6 +22,8 @@ class ConnectionsImport implements ToModel, WithBatchInserts, WithChunkReading
      */
     public function model(array $row)
     {
+//        $mcStart = microtime(true);
+
         $this->counter++;
         if ($this->counter % 1000 === 0){
             dump('lines:' . $this->counter . '; mem usage:' . round(memory_get_usage() / pow(1024,2)). ' MB');
@@ -40,6 +42,9 @@ class ConnectionsImport implements ToModel, WithBatchInserts, WithChunkReading
         foreach ($resultArrayWithGarbage as $field) {
             $resultArray[] = str_replace($garbage, '', $field);
         }
+
+//        $mcFinish = microtime(true);
+//        dump($mcFinish - $mcStart);
 
         if (!Connection::where('timestamp', $resultArray[0])->exists()) {
 
